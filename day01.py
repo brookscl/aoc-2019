@@ -1,4 +1,3 @@
-
 data = """66690
 86239
 75191
@@ -99,7 +98,13 @@ data = """66690
 54901
 73788
 108240"""
-lines = data.split('\n')
+lines = data.split("\n")
+
+
+def test_module_fuel():
+    assert(module_fuel(1969) == 966)
+    assert(module_fuel(100756) == 50346)
+
 
 def module_fuel(mass):
     if mass <= 0:
@@ -107,6 +112,7 @@ def module_fuel(mass):
     else:
         fuel = int(mass / 3) - 2
         return fuel + module_fuel(fuel)
+
 
 # the fuel required for a module, take its mass, divide by three,
 # round down, and subtract 2.
@@ -117,5 +123,3 @@ for line in lines:
     total += module_fuel(mass)
 
 print(total)
-
-
