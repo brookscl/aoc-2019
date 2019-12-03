@@ -46,6 +46,11 @@ input_str = """1,12,2,3,1,1,2,3,1,3,4,3,1,5,0,3,2,6,1,19,1,19,5,23,2,9,23,27,1,5
 2,0,14,0"""
 
 
+# Part 1
+print(compute(input_str)[0])
+
+
+# Part 2
 for noun in range(99):
     for verb in range(99):
         if compute(input_str, noun, verb)[0] == 19690720:
