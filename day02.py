@@ -1,10 +1,3 @@
-def concat(op_list):
-    result = ""
-    for o in op_list:
-        result += str(o) + ","
-    return result[:-1]
-
-
 def create_code_list(input):
     return [int(x) for x in input.split(",")]
 
