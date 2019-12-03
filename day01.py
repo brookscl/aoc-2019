@@ -100,26 +100,31 @@ data = """66690
 108240"""
 lines = data.split("\n")
 
-
-def test_module_fuel():
-    assert(module_fuel(1969) == 966)
-    assert(module_fuel(100756) == 50346)
+def calculate_total(modules, fuel_func):
+    total = 0
+    for line in lines:
+        mass = int(line)
+        total += fuel_func(mass)
+    return total
 
 
 def module_fuel(mass):
+    return int(mass / 3) - 2
+
+# Part 1
+print(calculate_total(lines, module_fuel))
+
+# Part 2
+
+def module_fuel_with_fuel_cost(mass):
     if mass <= 0:
         return -mass
     else:
         fuel = int(mass / 3) - 2
-        return fuel + module_fuel(fuel)
+        return fuel + module_fuel_with_fuel_cost(fuel)
+
+assert(module_fuel_with_fuel_cost(1969) == 966)
+assert(module_fuel_with_fuel_cost(100756) == 50346)
 
 
-# the fuel required for a module, take its mass, divide by three,
-# round down, and subtract 2.
-
-total = 0
-for line in lines:
-    mass = int(line)
-    total += module_fuel(mass)
-
-print(total)
+print(calculate_total(lines, module_fuel_with_fuel_cost))
