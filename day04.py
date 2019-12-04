@@ -21,21 +21,18 @@ assert is_password("111111")
 assert not is_password("223450")
 assert not is_password("123789")
 
-count = 0
-for i in range(124075, 580769+1):
-    if is_password(str(i)):
-        count += 1
+test_range = range(124075, 580769+1)
 
+count = sum(1 for i in test_range if is_password(str(i)))
+
+assert count == 2150
 print(count)
 
 assert is_password2("112233")
 assert not is_password2("123444")
 assert is_password2("111122")
 
-count = 0
-for i in range(124075, 580769+1):
-    if is_password2(str(i)):
-        count += 1
+count = sum(1 for i in test_range if is_password2(str(i)))
 
 assert count == 1462
 print(count)
