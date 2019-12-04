@@ -8,5 +8,6 @@
     "python.formatting.provider": "black",
     "python.jediEnabled": false,
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.pythonPath": "/Users/chrisbrooks/.local/share/virtualenvs/2019-hde1w0Qo/bin/python"
 }
