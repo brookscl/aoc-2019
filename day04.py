@@ -5,11 +5,8 @@ def is_password(p):
     if not ''.join(sorted(p)) == p:
         return False
 
-    for i in range(0, len(p) - 1):
-        if p[i] == p[i+1]:
-            return True
-
-    return False
+    groups = [m.group(0) for m in re.finditer(r"(\d)\1*", p)]
+    return next((g for g in groups if len(g) > 1), False)
 
 
 def is_password2(p):
