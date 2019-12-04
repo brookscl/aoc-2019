@@ -17,11 +17,7 @@ def is_password2(p):
         return False
 
     groups = [m.group(0) for m in re.finditer(r"(\d)\1*", p)]
-    for g in groups:
-        if len(g) == 2:
-            return True
-
-    return False
+    return next((g for g in groups if len(g) == 2), False)
 
 
 assert is_password("111111")
@@ -44,4 +40,5 @@ for i in range(124075, 580769+1):
     if is_password2(str(i)):
         count += 1
 
+assert count == 1462
 print(count)
