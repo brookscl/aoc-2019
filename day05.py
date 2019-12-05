@@ -12,6 +12,10 @@ OP_CODES = {
     2: 4,
     3: 2,
     4: 2,
+    5: 3,
+    6: 3,
+    7: 4,
+    8: 4
 }
 
 
@@ -22,13 +26,10 @@ def get_param(pos, mode, code_list):
         return code_list[pos]
 
 
-def compute(code_list, noun=None, verb=None):
+def compute(code_list, input_entry=None):
     if isinstance(code_list, str):
         code_list = create_code_list(code_list)
-    if noun:
-        code_list[1] = noun
-    if verb:
-        code_list[2] = verb
+    output = None
     pc = 0
     while True:
         op = code_list[pc]
@@ -36,7 +37,7 @@ def compute(code_list, noun=None, verb=None):
         op = int(str_op[-2:])
         mode_1 = int(str_op[-3])
         mode_2 = int(str_op[-4])
-        mode_3 = int(str_op[-5])
+        # mode_3 = int(str_op[-5])
         increment = OP_CODES[op]
         # Halt
         if op == 99:
@@ -46,27 +47,54 @@ def compute(code_list, noun=None, verb=None):
             a = get_param(pc + 1, mode_1, code_list)
             b = get_param(pc + 2, mode_2, code_list)
             code_list[code_list[pc + 3]] = a + b
+            pc += increment
         # Multply
         if op == 2:
             a = get_param(pc + 1, mode_1, code_list)
             b = get_param(pc + 2, mode_2, code_list)
             code_list[code_list[pc + 3]] = a * b
+            pc += increment
         # Input
         if op == 3:
-            val = int(input('Enter the integer input:'))
-            code_list[code_list[pc + 1]] = val
+            if input_entry is None:
+                input_entry = int(input('Enter the integer input:'))
+            code_list[code_list[pc + 1]] = input_entry
+            pc += increment
         # Output
         if op == 4:
+            output = code_list[code_list[pc + 1]]
             print(f"OUTPUT: {code_list[code_list[pc + 1]]}")
-        pc += increment
+            pc += increment
+        # Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+        if op == 5:
+            if get_param(pc + 1, mode_1, code_list):
+                pc = get_param(pc + 2, mode_2, code_list)
+            else:
+                pc += increment
+        # Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+        if op == 6:
+            if not get_param(pc + 1, mode_1, code_list):
+                pc = get_param(pc + 2, mode_2, code_list)
+            else:
+                pc += increment
+        # Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+        if op == 7:
+            if get_param(pc + 1, mode_1, code_list) < get_param(pc + 2, mode_2, code_list):
+                code_list[code_list[pc + 3]] = 1
+            else:
+                code_list[code_list[pc + 3]] = 0
+            pc += increment
+        # Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+        if op == 8:
+            if get_param(pc + 1, mode_1, code_list) == get_param(pc + 2, mode_2, code_list):
+                code_list[code_list[pc + 3]] = 1
+            else:
+                code_list[code_list[pc + 3]] = 0
+            pc += increment
+    return output
 
-    return code_list
 
-
-assert compute("3,0,4,0,99") == [1, 0, 4, 0, 99]
-assert compute("99") == [99]
-assert compute("1,0,0,0,99") == [2, 0, 0, 0, 99]
-assert compute("1,1,1,4,99,5,6,0,99") == [30, 1, 1, 4, 2, 5, 6, 0, 99]
+assert compute("3,0,4,0,99", 1) == 1
 
 
 input_str = """3,225,1,225,6,6,1100,1,238,225,104,0,1101,90,64,225,1101,15,56,225,1,
@@ -104,12 +132,11 @@ input_str = """3,225,1,225,6,6,1100,1,238,225,104,0,1101,90,64,225,1101,15,56,22
 
 
 # Part 1
-compute(input_str)
+assert compute(input_str, 1) == 7988899
 
 
 # Part 2
-# for noun in range(99):
-#     for verb in range(99):
-#         if compute(input_str, noun, verb)[0] == 19690720:
-#             print(f"{noun} * {verb} = {100 * noun + verb}")
-#             break
+assert compute("3,9,8,9,10,9,4,9,99,-1,8", 1) == 0
+assert compute("3,9,8,9,10,9,4,9,99,-1,8", 8) == 1
+
+compute(input_str, 5)
