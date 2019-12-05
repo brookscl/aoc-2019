@@ -3,27 +3,23 @@ def create_code_list(input):
 
 
 def create_code_string(code_list):
-    return ','.join(map(str, code_list))
+    return ",".join(map(str, code_list))
 
 
-OP_CODES = {
-    99: 0,
-    1: 4,
-    2: 4,
-    3: 2,
-    4: 2,
-    5: 3,
-    6: 3,
-    7: 4,
-    8: 4
-}
+OP_CODES = {99: 0, 1: 4, 2: 4, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4}
 
 
-def get_param(pos, mode, code_list):
-    if mode == 0:  # position mode
-        return code_list[code_list[pos]]
-    else:          # immediate mode
-        return code_list[pos]
+class ComputerState:
+    def __init__(self, modes, pc, code_list):
+        self.modes = modes
+        self.pc = pc
+        self.code_list = code_list
+
+    def get_param(self, param):
+        if self.modes[param - 1] == 0:  # position mode
+            return self.code_list[self.code_list[self.pc + param]]
+        else:  # immediate mode
+            return self.code_list[self.pc + param]
 
 
 def compute(code_list, input_entry=None):
@@ -35,29 +31,28 @@ def compute(code_list, input_entry=None):
         op = code_list[pc]
         str_op = str(op).zfill(5)
         op = int(str_op[-2:])
-        mode_1 = int(str_op[-3])
-        mode_2 = int(str_op[-4])
-        # mode_3 = int(str_op[-5])
+        modes = [int(str_op[-3]), int(str_op[-4])]
+        c = ComputerState(modes, pc, code_list)
         increment = OP_CODES[op]
         # Halt
         if op == 99:
             break
         # Addition
         if op == 1:
-            a = get_param(pc + 1, mode_1, code_list)
-            b = get_param(pc + 2, mode_2, code_list)
+            a = c.get_param(1)
+            b = c.get_param(2)
             code_list[code_list[pc + 3]] = a + b
             pc += increment
         # Multply
         if op == 2:
-            a = get_param(pc + 1, mode_1, code_list)
-            b = get_param(pc + 2, mode_2, code_list)
+            a = c.get_param(1)
+            b = c.get_param(2)
             code_list[code_list[pc + 3]] = a * b
             pc += increment
         # Input
         if op == 3:
             if input_entry is None:
-                input_entry = int(input('Enter the integer input:'))
+                input_entry = int(input("Enter the integer input:"))
             code_list[code_list[pc + 1]] = input_entry
             pc += increment
         # Output
@@ -65,28 +60,28 @@ def compute(code_list, input_entry=None):
             output = code_list[code_list[pc + 1]]
             print(f"OUTPUT: {code_list[code_list[pc + 1]]}")
             pc += increment
-        # Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+        # Opcode 5 is jump-if-true
         if op == 5:
-            if get_param(pc + 1, mode_1, code_list):
-                pc = get_param(pc + 2, mode_2, code_list)
+            if c.get_param(1):
+                pc = c.get_param(2)
             else:
                 pc += increment
-        # Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+        # Opcode 6 is jump-if-false
         if op == 6:
-            if not get_param(pc + 1, mode_1, code_list):
-                pc = get_param(pc + 2, mode_2, code_list)
+            if not c.get_param(1):
+                pc = c.get_param(2)
             else:
                 pc += increment
-        # Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+        # Opcode 7 is less than
         if op == 7:
-            if get_param(pc + 1, mode_1, code_list) < get_param(pc + 2, mode_2, code_list):
+            if c.get_param(1) < c.get_param(2):
                 code_list[code_list[pc + 3]] = 1
             else:
                 code_list[code_list[pc + 3]] = 0
             pc += increment
-        # Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+        # Opcode 8 is equals
         if op == 8:
-            if get_param(pc + 1, mode_1, code_list) == get_param(pc + 2, mode_2, code_list):
+            if c.get_param(1) == c.get_param(2):
                 code_list[code_list[pc + 3]] = 1
             else:
                 code_list[code_list[pc + 3]] = 0
@@ -139,4 +134,4 @@ assert compute(input_str, 1) == 7988899
 assert compute("3,9,8,9,10,9,4,9,99,-1,8", 1) == 0
 assert compute("3,9,8,9,10,9,4,9,99,-1,8", 8) == 1
 
-compute(input_str, 5)
+assert compute(input_str, 5) == 13758663
