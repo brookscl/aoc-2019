@@ -57,8 +57,8 @@ def compute(code_list, input_entry=None):
             pc += increment
         # Output
         if op == 4:
-            output = code_list[code_list[pc + 1]]
-            print(f"OUTPUT: {code_list[code_list[pc + 1]]}")
+            output = c.get_param(1)
+            print(f"OUTPUT: {output}")
             pc += increment
         # Opcode 5 is jump-if-true
         if op == 5:
