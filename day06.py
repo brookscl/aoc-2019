@@ -1,9 +1,10 @@
 from collections import deque
 
+
 def find_parents(tag, orbit_graph):
     parent_list = []
     current_node = tag
-    while current_node != 'COM':
+    while current_node != "COM":
         found = False
         for parent, children in orbit_graph.items():
             for child in children:
@@ -16,19 +17,20 @@ def find_parents(tag, orbit_graph):
             break
     return parent_list
 
+
 def total_orbits(orbits):
     orbit_graph = {}
     start = None
 
     for o in orbits:
-        l, r = o.split(')')
+        l, r = o.split(")")
 
         if l in orbit_graph:
             orbit_graph[l].append(r)
         else:
             orbit_graph[l] = [r]
 
-    start = 'COM'
+    start = "COM"
 
     # Walk through graph, breadth first
     explored = []
