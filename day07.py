@@ -9,11 +9,9 @@ def create_code_string(code_list):
     return ",".join(map(str, code_list))
 
 
-OP_CODES = {99: 0, 1: 4, 2: 4, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4}
-
-
 class ComputerState:
     def __init__(self, pc, code_list):
+        self.halted = False
         self.pc = pc
         self.code_list = code_list
 
@@ -29,75 +27,95 @@ class ComputerState:
         self.op = int(str_op[-2:])
         self.modes = [int(str_op[-3]), int(str_op[-4])]
 
+    def jump(self):
+        return self.OP_CODES[self.op]["jump"]
+
+    def op_func(self, input_entry):
+        return self.OP_CODES[self.op]["op"](self, input_entry)
+
     def increment_pc(self):
-        increment = OP_CODES[self.op]
-        self.pc += increment
+        self.pc += self.jump()
 
     def run_op(self, input_entry):
-        output = None
-        # Halt
         self.break_out = False
-        if self.op == 99:
-            output = input_entry[0]
-            self.halted = True
-            self.break_out = True
-        # Addition
-        if self.op == 1:
-            a = self.get_param(1)
-            b = self.get_param(2)
-            self.code_list[self.code_list[self.pc + 3]] = a + b
-            self.increment_pc()
-        # Multiply
-        if self.op == 2:
-            a = self.get_param(1)
-            b = self.get_param(2)
-            self.code_list[self.code_list[self.pc + 3]] = a * b
-            self.increment_pc()
-        # Input
-        if self.op == 3:
-            if input_entry is None:
-                input_entry = [int(input("Enter the integer input:"))]
-            self.code_list[self.code_list[self.pc + 1]] = input_entry[0]
-            input_entry.pop(0)
-            self.increment_pc()
-        # Output
-        if self.op == 4:
-            output = self.get_param(1)
-            # print(f"OUTPUT: {output} for amp {amp}")
-            # Save state
-            self.halted = False
-            self.increment_pc()
-            self.break_out = True
-        # Opcode 5 is jump-if-true
-        if self.op == 5:
-            if self.get_param(1):
-                self.pc = self.get_param(2)
-            else:
-                self.increment_pc()
-        # Opcode 6 is jump-if-false
-        if self.op == 6:
-            if not self.get_param(1):
-                self.pc = self.get_param(2)
-            else:
-                self.increment_pc()
-        # Opcode 7 is less than
-        if self.op == 7:
-            if self.get_param(1) < self.get_param(2):
-                self.code_list[self.code_list[self.pc + 3]] = 1
-            else:
-                self.code_list[self.code_list[self.pc + 3]] = 0
-            self.increment_pc()
-        # Opcode 8 is equals
-        if self.op == 8:
-            if self.get_param(1) == self.get_param(2):
-                self.code_list[self.code_list[self.pc + 3]] = 1
-            else:
-                self.code_list[self.code_list[self.pc + 3]] = 0
-            self.increment_pc()
 
+        return self.op_func(input_entry)
+
+    def halt(self, input_entry):
+        self.halted = True
+        self.break_out = True
+        return input_entry[0]
+
+    def add(self, _):
+        a = self.get_param(1)
+        b = self.get_param(2)
+        self.code_list[self.code_list[self.pc + 3]] = a + b
+        self.increment_pc()
+        return None
+
+    def multiply(self, _):
+        a = self.get_param(1)
+        b = self.get_param(2)
+        self.code_list[self.code_list[self.pc + 3]] = a * b
+        self.increment_pc()
+        return None
+
+    def input(self, input_entry):
+        if input_entry is None:
+            input_entry = [int(input("Enter the integer input:"))]
+        self.code_list[self.code_list[self.pc + 1]] = input_entry[0]
+        input_entry.pop(0)
+        self.increment_pc()
+        return None
+
+    def output(self, _):
+        output = self.get_param(1)
+        self.halted = False
+        self.break_out = True
+        self.increment_pc()
         return output
 
-    halted = False
+    def jump_if_true(self, _):
+        if self.get_param(1):
+            self.pc = self.get_param(2)
+        else:
+            self.increment_pc()
+        return None
+
+    def jump_if_false(self, _):
+        if not self.get_param(1):
+            self.pc = self.get_param(2)
+        else:
+            self.increment_pc()
+        return None
+
+    def less_than(self, _):
+        if self.get_param(1) < self.get_param(2):
+            self.code_list[self.code_list[self.pc + 3]] = 1
+        else:
+            self.code_list[self.code_list[self.pc + 3]] = 0
+        self.increment_pc()
+        return None
+
+    def equals(self, _):
+        if self.get_param(1) == self.get_param(2):
+            self.code_list[self.code_list[self.pc + 3]] = 1
+        else:
+            self.code_list[self.code_list[self.pc + 3]] = 0
+        self.increment_pc()
+        return None
+
+    OP_CODES = {
+        99: {"jump": 0, "op": halt},
+        1: {"jump": 4, "op": add},
+        2: {"jump": 4, "op": multiply},
+        3: {"jump": 2, "op": input},
+        4: {"jump": 2, "op": output},
+        5: {"jump": 3, "op": jump_if_true},
+        6: {"jump": 3, "op": jump_if_false},
+        7: {"jump": 4, "op": less_than},
+        8: {"jump": 4, "op": equals},
+    }
 
 
 def compute(code_list, input_entry=None, amp=None, state=None):
