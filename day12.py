@@ -1,4 +1,5 @@
 from collections import namedtuple
+import numpy
 import re
 
 
@@ -116,3 +117,75 @@ for i in range(1000):
     moon_list = move_moons(moon_list)
 
 print(f"Total energy: {total_energy_system(moon_list)}")
+
+# Part 2 - Find duplicate state
+
+moons = """<x=-1, y=0, z=2>
+<x=2, y=-10, z=-7>
+<x=4, y=-8, z=8>
+<x=3, y=5, z=-1>"""
+
+
+def check_moon_state(moon_list, universe_states):
+    state = ()
+    for moon in moon_list:
+        state += moon["pos"] + moon["vel"]
+    if state in universe_states:
+        return True
+    else:
+        universe_states.add(state)
+        return False
+
+
+# This is brute force
+def steps_until_duplicate(moon_list):
+    universe_states = set()
+    steps = 0
+    while True:
+        moon_list = calculate_velocities(moon_list)
+        moon_list = move_moons(moon_list)
+        if check_moon_state(moon_list, universe_states):
+            return steps
+        steps += 1
+
+
+def check_moon_state_axis(moon_list, universe_states, axis):
+    state = ()
+    for moon in moon_list:
+        state += (getattr(moon["pos"], axis), getattr(moon["vel"], "d" + axis))
+    if state in universe_states:
+        return True
+    else:
+        universe_states.add(state)
+        return False
+
+
+def steps_until_duplicate_axis(moon_list, axis):
+    universe_states = set()
+    steps = 0
+    while True:
+        moon_list = calculate_velocities(moon_list)
+        moon_list = move_moons(moon_list)
+        if check_moon_state_axis(moon_list, universe_states, axis):
+            return steps
+        steps += 1
+
+
+# moon_list = load_moons(moons)
+# steps = steps_until_duplicate(moon_list)
+# assert steps == 2772
+
+moons = """<x=17, y=5, z=1>
+<x=-2, y=-8, z=8>
+<x=7, y=-6, z=14>
+<x=1, y=-10, z=4>"""
+
+moon_list = load_moons(moons)
+steps_x = steps_until_duplicate_axis(moon_list, "x")
+print(f"steps until x repeats: {steps_x}")
+steps_y = steps_until_duplicate_axis(moon_list, "y")
+print(f"steps until y repeats: {steps_y}")
+steps_z = steps_until_duplicate_axis(moon_list, "z")
+print(f"steps until z repeats: {steps_z}")
+lcm = numpy.lcm.reduce([steps_x, steps_y, steps_z])
+print(f"LCM: {lcm}")
