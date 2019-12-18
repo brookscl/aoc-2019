@@ -12,26 +12,49 @@ def create_code_string(code_list):
 
 
 def get_input():
-    pass
+    if ball_x > paddle_x:
+        return [1]
+    elif ball_x < paddle_x:
+        return [-1]
+    else:
+        return [0]
 
 
 waiting_for_x = True
 waiting_for_y = False
 waiting_for_tile = False
 block_tile_count = 0
+current_x = 0
+current_y = 0
+ball_x = 0
+ball_y = 0
+paddle_x = 0
+paddle_y = 0
 
 
 def put_output(output):
-    global waiting_for_x, waiting_for_y, waiting_for_tile, block_tile_count
+    global waiting_for_x, waiting_for_y, waiting_for_tile
+    global block_tile_count, current_x, current_y, ball_x, ball_y
+    global paddle_x, paddle_y
     if waiting_for_x:
+        current_x = output
         waiting_for_y = True
         waiting_for_x = False
     elif waiting_for_y:
+        current_y = output
         waiting_for_tile = True
         waiting_for_y = False
     else:
-        if output == 2:
+        if current_x == -1 and current_y == 0:
+            print(f"Score: {output}")
+        elif output == 2:  # Block
             block_tile_count += 1
+        elif output == 3:  # Paddle
+            paddle_x = current_x
+            paddle_y = current_y
+        elif output == 4:  # Ball
+            ball_x = current_x
+            ball_y = current_y
         waiting_for_tile = False
         waiting_for_x = True
 
@@ -198,3 +221,13 @@ program = content[0].strip()
 (output, state) = compute(program)
 
 print(f"Number of blocks: {block_tile_count}")
+
+
+# Part 2
+
+# Memory address 0 represents the number of quarters
+# that have been inserted; set it to 2 to play for free
+
+code_list = create_code_list(program)
+code_list[0] = 2
+(output, state) = compute(code_list)
