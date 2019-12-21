@@ -1,5 +1,5 @@
 from collections import defaultdict
-from math import ceil
+from math import ceil, floor
 from queue import Queue
 
 
@@ -21,11 +21,11 @@ def create_reaction_graph(reactions):
     return reaction_graph
 
 
-def ore_requirement(reaction_graph):
+def ore_requirement(reaction_graph, fuel=1):
     ore = 0
     supply = defaultdict(int)
     orders = Queue()
-    orders.put(("FUEL", 1))
+    orders.put(("FUEL", fuel))
     if isinstance(reaction_graph, str):
         reaction_graph = create_reaction_graph(reaction_graph)
 
@@ -122,3 +122,37 @@ with open("day14_input.txt") as f:
 
 ore = ore_requirement(" ".join(reactions))
 print(ore)
+
+
+# Part 2
+def max_fuel(reactions, ore):
+    ore_for_one_fuel = ore_requirement(reactions)
+    fuel = ore / ore_for_one_fuel
+    while True:
+        ore_amount = ore_requirement(reactions, fuel + 1)
+        if ore_amount > ore:
+            return fuel
+        else:
+            fuel = max(fuel + 1, floor((fuel + 1) * ore / ore_amount))
+
+
+reactions = """157 ORE => 5 NZVS
+165 ORE => 6 DCFZ
+44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
+12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
+179 ORE => 7 PSHF
+177 ORE => 5 HKGWZ
+7 DCFZ, 7 PSHF => 2 XJWVT
+165 ORE => 2 GPVTF
+3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""
+
+BIG_ORE = 1000000000000
+fuel = max_fuel(reactions, BIG_ORE)  # 13312
+assert fuel == 82892753
+
+
+with open("day14_input.txt") as f:
+    reactions = f.readlines()
+
+fuel = max_fuel(" ".join(reactions), BIG_ORE)  # 13312
+print(fuel)
