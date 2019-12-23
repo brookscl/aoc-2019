@@ -190,7 +190,6 @@ class ComputerState:
 
 # Part 1
 
-
 with open("day15_program.txt") as f:
     content = f.readlines()
 
@@ -223,12 +222,11 @@ discovered = set()
 to_explore = Queue()
 to_explore.put((Point(0, 0), steps, start_state))
 
+oxygen_location = None
+oxygen_state = None
 
 while not found:
     current, steps, state = to_explore.get()
-    if steps > max_steps:
-        print(f"Now at step depth: {steps}")
-        max_steps = steps
     if current not in discovered:
         discovered.add(current)
         steps += 1
@@ -238,8 +236,43 @@ while not found:
             output = new_state.run([i])
             if output == 2:
                 print(f"Solution: {steps} steps")
+                oxygen_location = new_position
+                oxygen_state = new_state
                 found = True
             elif output == 0:  # Wall
                 discovered.add(new_position)
             else:
                 to_explore.put((new_position, steps, new_state))
+
+# Part 2
+print(f"Oxygen location is {oxygen_location}")
+
+# Strategy: find the oxygen then do a full search to find max depth starting
+# at tank.
+
+max_steps = 0
+found = False
+steps = 0
+discovered = set()
+to_explore = Queue()
+to_explore.put((oxygen_location, steps, oxygen_state))
+
+while not to_explore.empty():
+    current, steps, state = to_explore.get()
+    if steps > max_steps:
+        # print(f"Now at step depth: {steps}")
+        max_steps = steps
+    if current not in discovered:
+        discovered.add(current)
+        steps += 1
+        for i in range(1, 5):
+            new_position = move(current, i)
+            new_state = state.clone()
+            output = new_state.run([i])
+            if output == 2:
+                print(f"Found oxygen again! Doh!")
+            elif output == 0:  # Wall
+                discovered.add(new_position)
+            else:
+                to_explore.put((new_position, steps, new_state))
+print(f"Oxygen spreads after {max_steps - 1} minutes")
