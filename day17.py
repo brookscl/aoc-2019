@@ -247,3 +247,7 @@ print(f"Found {len(intersections)} intersections")
 print(f"List: {intersections}")
 alignment_sum = sum(p.x * p.y for p in intersections)
 print(f"Sum of alignment params: {alignment_sum}")
+
+code_list[0] = 2
+start_state = ComputerState(0, code_list, output_func=put_output, input_func=get_input)
+start_state.run()
